@@ -10,10 +10,12 @@ pocketsphinx_mdef_convert_LDADD = \
 pocketsphinx_batch_SOURCES = batch.c
 pocketsphinx_batch_LDADD = \
 	$(top_builddir)/src/libpocketsphinx/libpocketsphinx.la
-
+	
 pocketsphinx_continuous_SOURCES = continuous.c
 pocketsphinx_continuous_LDADD = \
-	$(top_builddir)/src/libpocketsphinx/libpocketsphinx.la -lsphinxad
+	$(top_builddir)/src/libpocketsphinx/libpocketsphinx.la -lsphinxad \
+	$(top_builddir)/extlib/lib96BoardsGPIO.la \
+	$(top_builddir)/extlib/libsoc.la
 
 AM_CFLAGS =-I$(top_srcdir)/include \
 	-I$(top_srcdir)/src/libpocketsphinx \

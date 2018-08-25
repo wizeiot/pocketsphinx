@@ -66,6 +66,15 @@
 
 #include "pocketsphinx.h"
 
+#define DB410C
+
+#if defined(DB410C) // Support GPIO for DragonBoard410c
+    #include "libsoc_board.h"
+    #include "libsoc_gpio.h"
+    #include "gpio.h"
+    #define BUTTON "GPIO-C"
+#endif // DB410C
+
 static const arg_t cont_args_def[] = {
     POCKETSPHINX_OPTIONS,
     /* Argument file. */
@@ -264,11 +273,20 @@ recognize_from_microphone()
             /* speech -> silence transition, time to start new utterance  */
             ps_end_utt(ps);
             hyp = ps_get_hyp(ps, NULL );
+#if defined(DB410C) // Support GPIO for DragonBoard410c
+            if (hyp != NULL && strlen(hyp) > 0) {
+                digitalWrite(gpio_id(BUTTON), HIGH);
+		printf("%s\n", hyp);
+		sleep(5);
+		digitalWrite(gpio_id(BUTTON), LOW);
+                fflush(stdout);
+            }
+#else
             if (hyp != NULL) {
                 printf("%s\n", hyp);
                 fflush(stdout);
             }
-
+#endif // DB410C
             if (ps_start_utt(ps) < 0)
                 E_FATAL("Failed to start utterance\n");
             utt_started = FALSE;
@@ -284,6 +302,13 @@ main(int argc, char *argv[])
 {
     char const *cfg;
 
+#if defined(DB410C) // Support GPIO for DragonBoard410c
+    if (gpio_open(gpio_id(BUTTON), "out")) {
+        E_INFO("Failed to initialize 96BoardsGPIO library");
+        return 1;
+    }
+#endif // DB410C
+	
     config = cmd_ln_parse_r(NULL, cont_args_def, argc, argv, TRUE);
 
     /* Handle argument file as -argfile. */
